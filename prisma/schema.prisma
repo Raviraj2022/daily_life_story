@@ -1,0 +1,186 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+enum StoryType{
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+
+enum MediaType{
+  IMAGE
+  AUDIO
+  VIDEO
+}
+
+
+model User {
+    id                       String                     @id     @default(uuid())
+    email                     String                    @unique
+    password                  String?            
+
+
+    createdAt                 DateTime                   @default(now())
+    updatedAt                 DateTime                   @updatedAt
+
+    profile                   Profile?
+    journalEntries            JournalEntry[]
+    people                    Person[]
+    places                    Place[]
+    media                     Media[]
+    lifeEvents                LifeEvent[]
+    generatedStories          GeneratedStory[]
+}
+
+
+model Profile {
+  id                          String              @id       @default(uuid())
+
+  userId                     String      @unique
+  user                       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  fullName                   String?
+  dateOfBirth                DateTime?
+  bio                         String?
+  profilePhotoURL            String?
+  createdAt                  DateTime                  @default(now())
+  updatedAt                  DateTime                  @updatedAt
+}
+
+model JournalEntry {
+  id                              String            @id      @default(uuid())
+  userId                          String
+  user                            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title                            String?
+  content                          String
+  entryDate                        DateTime
+  mood                            String?
+
+  createdAt                       DateTime      @default(now())
+  updatedAt                       DateTime        @updatedAt
+
+  people                           JournalEntryPerson[]
+  places                           JournalEntryPlace[]
+  media                            Media[]
+}
+
+
+
+model Person {
+  id                          String             @id     @default(uuid())
+  
+  userId                      String             
+  user                        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name                        String
+  relationship                String?
+
+
+  createdAt                   DateTime            @default(now())
+  journalEntries              JournalEntryPerson[]
+}
+
+
+model Place{
+  id                         String               @id      @default(uuid())
+
+  userId                    String
+  user                      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name                      String
+  latitude                  Decimal?
+  longitude                 Decimal?
+
+  createdAt                 DateTime       @default(now())
+  journalEntries            JournalEntryPlace[]
+}
+
+
+model Media{
+  id                      String        @id              @default(uuid())
+
+  userId                  String
+  user                    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  journalEntryId         String?
+  journalEntry           JournalEntry?  @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+
+  type                   MediaType
+  fileUrl                String
+  caption                String?
+
+  createdAt              DateTime       @default(now())
+}
+
+
+model LifeEvent{
+  id                          String        @id       @default(uuid())
+
+  userId                      String
+  user                        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title                       String
+  description                 String?
+  eventDate                   DateTime
+  category                    String?
+
+  createdAt                  DateTime       @default(now())
+  updatedAt                 DateTime   @updatedAt
+}
+
+
+model GeneratedStory{
+  id                      String       @id      @default(uuid())
+
+  userId                  String
+  user                    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type                    StoryType
+
+  periodStart             DateTime
+  periodEnd               DateTime
+
+
+  title                   String?
+  content                 String
+
+
+
+  version                Int               @default(1)
+  generatedAt            DateTime          @default(now())
+}
+
+
+model JournalEntryPerson{
+  journalEntryId              String
+  personId                    String
+
+  journalEntry                JournalEntry  @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  person                      Person        @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@id([journalEntryId, personId])
+}
+
+model JournalEntryPlace {
+  journalEntryId           String
+  placeId                 String
+
+  journalEntry            JournalEntry  @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  place                   Place         @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@id([journalEntryId, placeId])
+}
