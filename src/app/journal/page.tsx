@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-
+import { useRouter } from "next/navigation";
 type JournalEntry = {
   id: string;
   title: string | null;
@@ -26,16 +26,22 @@ export default function JournalPage() {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
+  const router = useRouter();
 
   async function fetchEntries() {
     try {
-      const response = await fetch("/api/journal");
-
+      const response = await fetch("/api/journal", {
+      method: "GET",
+      credentials: "same-origin",
+    });
+      const data = await response.json();
+    //   console.log("Journal API status:", response.status);
+    // console.log("Journal API response:", data);
       if (!response.ok) {
         throw new Error("Failed to fetch memories");
       }
 
-      const data = await response.json();
+      
 
       setEntries(data);
     } catch (error) {
@@ -46,8 +52,26 @@ export default function JournalPage() {
   }
 
   useEffect(() => {
-    fetchEntries();
-  }, []);
+  async function checkAuthentication() {
+    try {
+      const response = await fetch("/api/auth/me", {
+        credentials: "same-origin",
+      });
+
+      if (!response.ok) {
+        router.push("/login");
+        return;
+      }
+
+      fetchEntries();
+    } catch (error) {
+      console.error("Authentication check failed:", error);
+      router.push("/login");
+    }
+  }
+
+  checkAuthentication();
+}, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -90,25 +114,51 @@ export default function JournalPage() {
     }
   }
 
+  async function handleLogout() {
+  try {
+    const response = await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "same-origin",
+    });
+
+    if (!response.ok) {
+      throw new Error("Logout failed");
+    }
+
+    router.push("/login");
+  } catch (error) {
+    console.error("Logout error:", error);
+  }
+}
+
   return (
     <main className="min-h-screen bg-zinc-50 px-6 py-10">
       <div className="mx-auto max-w-3xl">
 
         {/* Header */}
-        <div className="mb-10">
-          <p className="mb-2 text-sm font-medium text-zinc-500">
-            LifeStory
-          </p>
+        <div className="mb-10 flex items-start justify-between gap-6">
+  <div>
+    <p className="mb-2 text-sm font-medium text-zinc-500">
+      LifeStory
+    </p>
 
-          <h1 className="text-4xl font-semibold tracking-tight text-zinc-900">
-            Capture your day.
-          </h1>
+    <h1 className="text-4xl font-semibold tracking-tight text-zinc-900">
+      Capture your day.
+    </h1>
 
-          <p className="mt-3 text-zinc-600">
-            Your life is already a story. Just capture the moments.
-          </p>
-        </div>
+    <p className="mt-3 text-zinc-600">
+      Your life is already a story. Just capture the moments.
+    </p>
+  </div>
 
+  <button
+    type="button"
+    onClick={handleLogout}
+    className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition hover:border-zinc-400 hover:text-zinc-900"
+  >
+    Logout
+  </button>
+</div>
         {/* Journal Form */}
         <form
           onSubmit={handleSubmit}

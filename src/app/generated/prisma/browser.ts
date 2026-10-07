@@ -67,3 +67,8 @@ export type JournalEntryPerson = Prisma.JournalEntryPersonModel
  * 
  */
 export type JournalEntryPlace = Prisma.JournalEntryPlaceModel
+/**
+ * Model Session
+ * 
+ */
+export type Session = Prisma.SessionModel

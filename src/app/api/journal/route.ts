@@ -1,10 +1,27 @@
+import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { error } from "console";
 import { NextResponse } from "next/server";
 
 export async function GET() {
     
     try {
+
+        const user = await getCurrentUser();
+        if(!user){
+            return NextResponse.json({
+                error : "Unauthorized",
+
+            },
+        {
+            status : 401,
+        });
+        }
+
         const entries = await prisma.journalEntry.findMany({
+            where: {
+        userId: user.id,
+      },
             orderBy:{
                 entryDate : "desc",
             }
@@ -24,6 +41,17 @@ export async function GET() {
 export async function POST(request: Request) {
     
     try {
+
+        const user = await getCurrentUser();
+        if(!user){
+            return NextResponse.json({
+                error: "unauthorized"
+            },
+        {
+            status: 401
+        });
+        }
+        // console.log(user);
         const body = await request.json();
         const {title, content, entryDate, mood} = body;
 
@@ -35,14 +63,26 @@ export async function POST(request: Request) {
             {status: 400}
         );
         }
-        let user = await prisma.user.findFirst();
-        if(!user){
-            user = await prisma.user.create({
-                data:{
-                    email:"demo@gmail.com",
-                }
-            })
-        }
+
+        // const entry = await prisma.journalEntry.create({
+        //     data:{
+        //         userId : user.id,
+        //         title: title?.trim() || null,
+        // content: content.trim(),
+        // entryDate: entryDate
+        //   ? new Date(entryDate)
+        //   : new Date(),
+        // mood: mood || null,
+        //     }
+        // })
+        // let user = await prisma.user.findFirst();
+        // if(!user){
+        //     user = await prisma.user.create({
+        //         data:{
+        //             email:"demo@gmail.com",
+        //         }
+        //     })
+        // }
         const entry = await prisma.journalEntry.create({
             data:{
                 userId: user.id,

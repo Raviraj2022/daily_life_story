@@ -60,7 +60,8 @@ export const ModelName = {
   LifeEvent: 'LifeEvent',
   GeneratedStory: 'GeneratedStory',
   JournalEntryPerson: 'JournalEntryPerson',
-  JournalEntryPlace: 'JournalEntryPlace'
+  JournalEntryPlace: 'JournalEntryPlace',
+  Session: 'Session'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -197,6 +198,17 @@ export const JournalEntryPlaceScalarFieldEnum = {
 } as const
 
 export type JournalEntryPlaceScalarFieldEnum = (typeof JournalEntryPlaceScalarFieldEnum)[keyof typeof JournalEntryPlaceScalarFieldEnum]
+
+
+export const SessionScalarFieldEnum = {
+  id: 'id',
+  token: 'token',
+  userId: 'userId',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
+} as const
+
+export type SessionScalarFieldEnum = (typeof SessionScalarFieldEnum)[keyof typeof SessionScalarFieldEnum]
 
 
 export const SortOrder = {

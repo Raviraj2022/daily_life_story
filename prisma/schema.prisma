@@ -44,6 +44,7 @@ model User {
     media                     Media[]
     lifeEvents                LifeEvent[]
     generatedStories          GeneratedStory[]
+    sessions Session[]
 }
 
 
@@ -183,4 +184,13 @@ model JournalEntryPlace {
   place                   Place         @relation(fields: [placeId], references: [id], onDelete: Cascade)
 
   @@id([journalEntryId, placeId])
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
